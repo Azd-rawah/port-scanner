@@ -1,4 +1,6 @@
 import socket
+from concurrent.futures import ThreadPoolExecutor
+COMMON = {21: "FTP", 22: "SSH", 80: "HTTP", 135: "RPC", 443: "HTTPS", 445: "SMB"}
 
 def scan_port(host, port, timeout=0.5):
     with socket.socket() as s:
@@ -22,8 +24,10 @@ if __name__ == "__main__":
         end = int (input("End port: "))
     except ValueError:
         raise SystemExit("Ports must be numbers.")
-    # shortcut: one port at a time, slow on big ranges; use threads if you need speed
-    for port in range(start, end + 1):
-        if scan_port(host, port):
-            print("OPEN:", port)
+    ports = range(start, end + 1)
+    with ThreadPoolExecutor(100) as pool:  # 100 ports checked at once
+        for port, is_open in zip(ports, pool.map(lambda p: scan_port(host, p), ports)):
+            if is_open:
+                print("OPEN:", port, COMMON.get(port, ""))
+   
     print("Done")

@@ -17,8 +17,11 @@ def self_check():
 
 if __name__ == "__main__":
     host = input("Host (your own machine: 127.0.0.1): ")
-    start = int(input("Start port: "))
-    end = int(input("End port: "))
+    try:
+        start = int (input("Start port: "))
+        end = int (input("End port: "))
+    except ValueError:
+        raise SystemExit("Ports must be numbers.")
     # shortcut: one port at a time, slow on big ranges; use threads if you need speed
     for port in range(start, end + 1):
         if scan_port(host, port):
